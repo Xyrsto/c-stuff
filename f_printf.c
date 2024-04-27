@@ -4,10 +4,21 @@
 #include <string.h>
 #include <unistd.h>
 
+int check_negative_int(int num) {
+  if (num < 0) {
+    char minus_sign = '-';
+    write(1, &minus_sign, 1);
+    num = -num;
+  }
+  return num;
+}
+
 int print_int(int num) {
   int remainder = 0;
   int chars[1024];
   int i = 0;
+
+  num = check_negative_int(num);
 
   while (num > 0) {
     remainder = num % 10;
@@ -45,12 +56,21 @@ int print_float(float num) {
   return 0;
 }
 
-int ft_printf(const char *str, ...) {
+int f_printf(const char *str, ...) {
   int i = 0;
   va_list list;
   va_start(list, str);
+
+  if (str == NULL) {
+    return -1;
+  }
+
   while (str[i]) {
     if (str[i] == '%') {
+      if (str[i + 1] == '%') {
+        return -1;
+      }
+
       switch (str[i + 1]) {
       case 's':
         char *arg1 = va_arg(list, char *);
@@ -73,21 +93,38 @@ int ft_printf(const char *str, ...) {
       }
     }
 
-    if (str[i] == '\n') {
+    switch (str[i]) {
+    case '\n':
       char newline = '\n';
       write(1, &newline, 1);
-    } else if (str[i] == '\t') {
+      break;
+    case '\t':
       char tab = '\t';
       write(1, &tab, 1);
+      break;
+    case '\\':
+      char backslash = '\\';
+      write(1, &backslash, 1);
+      break;
+    case '\'':
+      char singlequote = '\'';
+      write(1, &singlequote, 1);
+      break;
+    case '\"':
+      char doublequote = '\"';
+      write(1, &doublequote, 1);
+      break;
+    default:
+      break;
     }
     i++;
   }
   va_end(list);
-  return 0;
+  return i;
 }
 
 int main(void) {
-  float num = 932.34;
-  ft_printf("\t%f\n", num);
+  char *str = "Ola % mundo";
+  int returns = f_printf("", str);
   return 0;
 }
